@@ -1,0 +1,343 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<script src="./js/jquery-1.10.1.min.js" charset="utf-8"></script>
+<script src="./js/class/tank_class.js" charset="utf-8"></script>
+<script src="./js/class/shell_class.js" charset="utf-8"></script>
+<script type="text/javascript">
+var temp = new Array();;
+
+var bj_audio;
+
+var run_var = {is_end:false,diesum:0,tank_xy:{x:0,y:0}};
+var myCanvas=document.getElementById("myCanvas");
+var reward = {speed:new Array()}
+var level = {nowlevel:1,showsum_oth:8,max_speed:5,oth_tank_shell:500,sum_die:10}
+var int_game ;
+var int_shell;
+var cxt;
+var int_img;
+var tank;
+var oth_tank =new Array();
+
+var is_game_init = false;
+var int_start;
+
+$(function (){
+game_init();
+//setInterval(draw,100);
+
+
+	/*var img=new Image();
+	img.src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACkAAAAsCAQAAABSpFnOAAAACXBIWXMAAAsTAAALEwEAmpwYAAADGGlDQ1BQaG90b3Nob3AgSUNDIHByb2ZpbGUAAHjaY2BgnuDo4uTKJMDAUFBUUuQe5BgZERmlwH6egY2BmYGBgYGBITG5uMAxIMCHgYGBIS8/L5UBFTAyMHy7xsDIwMDAcFnX0cXJlYE0wJpcUFTCwMBwgIGBwSgltTiZgYHhCwMDQ3p5SUEJAwNjDAMDg0hSdkEJAwNjAQMDg0h2SJAzAwNjCwMDE09JakUJAwMDg3N+QWVRZnpGiYKhpaWlgmNKflKqQnBlcUlqbrGCZ15yflFBflFiSWoKAwMD1A4GBgYGXpf8EgX3xMw8BSMDVQYqg4jIKAUICxE+CDEESC4tKoMHJQODAIMCgwGDA0MAQyJDPcMChqMMbxjFGV0YSxlXMN5jEmMKYprAdIFZmDmSeSHzGxZLlg6WW6x6rK2s99gs2aaxfWMPZ9/NocTRxfGFM5HzApcj1xZuTe4FPFI8U3mFeCfxCfNN45fhXyygI7BD0FXwilCq0A/hXhEVkb2i4aJfxCaJG4lfkaiQlJM8JpUvLS19QqZMVl32llyfvIv8H4WtioVKekpvldeqFKiaqP5UO6jepRGqqaT5QeuA9iSdVF0rPUG9V/pHDBYY1hrFGNuayJsym740u2C+02KJ5QSrOutcmzjbQDtXe2sHY0cdJzVnJRcFV3k3BXdlD3VPXS8Tbxsfd99gvwT//ID6wIlBS4N3hVwMfRnOFCEXaRUVEV0RMzN2T9yDBLZE3aSw5IaUNak30zkyLDIzs+ZmX8xlz7PPryjYVPiuWLskq3RV2ZsK/cqSql01jLVedVPrHzbqNdU0n22VaytsP9op3VXUfbpXta+x/+5Em0mzJ/+dGj/t8AyNmf2zvs9JmHt6vvmCpYtEFrcu+bYsc/m9lSGrTq9xWbtvveWGbZtMNm/ZarJt+w6rnft3u+45uy9s/4ODOYd+Hmk/Jn58xUnrU+fOJJ/9dX7SRe1LR68kXv13fc5Nm1t379TfU75/4mHeY7En+59lvhB5efB1/lv5dxc+NH0y/fzq64Lv4T8Ffp360/rP8f9/AA0ADzT6lvFdAAAAIGNIUk0AAHolAACAgwAA+f8AAIDpAAB1MAAA6mAAADqYAAAXb5JfxUYAAABdSURBVHjaYvzPQG3AgluKEb9tOKWZqO7IUSNHjRw1cpgYyYhLnOP/j9GwHDVy1MjhayTW1gYbw09G3MUCEvhPYgOGUGuJkfoeH20TjRo5auSokYPXSAAAAAD//wMAmwcJW8IAJxUAAAAASUVORK5CYII=";
+	img.onload = function (){
+		cxt.drawImage(img,0,0);
+		
+	};*/
+	
+});
+function entrance(){
+	if(typeof int_game != 'undefined' && int_game != '')return false;
+	game_init();
+	int_start=self.setInterval(start,50);
+	
+}
+function is_loadimg(){
+	if($('#img_div img').size()==$('#img_div img[name=imgok]').size())
+	{
+		int_img=window.clearInterval(int_img);
+		tank = new tankobj(myCanvas.width/2+50,myCanvas.height-30,0,5,true);
+		tank.shellimg = document.getElementById("shell");
+		tank.setimg(document.getElementById("tank1"));
+		is_game_init = true;
+		draw();
+		return true;
+	}
+}
+
+//游戏初始化
+function game_init(){
+	myCanvas=document.getElementById("myCanvas");
+	cxt=myCanvas.getContext("2d");
+	run_var = {is_end:false,diesum:0,tank_xy:{x:0,y:0}};
+	reward = {speed:new Array()}
+	level = {nowlevel:1,showsum_oth:1,max_speed:5,oth_tank_shell:500,sum_die:2};
+	// int_game = '';
+	// int_shell = '';
+	// int_img = '';
+	oth_tank =new Array();
+	bj_audio = document.getElementById('bj_audio');
+	int_img=self.setInterval("is_loadimg()",50);
+}
+//re开始
+function start(){
+	if(!is_game_init)
+	{
+		alert('等待游戏初始化');
+		return ;
+	}
+	
+	if(typeof int_start!='undefined')
+	{
+		int_start = window.clearInterval(int_start);
+	}
+	bj_audio.load();bj_audio.play();
+		game_init();
+		int_game = setInterval(draw,100);
+		int_shell = setInterval(oth_tank_shell,level.oth_tank_shell);
+}
+//Pause暂停
+function Pause(){
+	if(typeof int_game=='undefined')
+	{
+		return ;
+	}
+	bj_audio.pause();
+	int_game = window.clearInterval(int_game);
+	int_shell = window.clearInterval(int_shell);
+}
+//继续
+function notPause(){
+	if(!is_game_init||typeof int_game!='undefined')
+	{
+		if(!(typeof int_game!='undefined'))
+		{
+			alert('等待游戏初始化');
+		}
+		return ;
+	}
+	bj_audio.play();
+	int_game = setInterval(draw,100);
+	int_shell = setInterval(oth_tank_shell,level.oth_tank_shell);
+}
+//re
+function restart(){
+	if(!is_game_init)
+	{
+		return ;
+	}
+	bj_audio.load();bj_audio.play();
+		run_var = {is_end:false,diesum:0,tank_xy:{x:0,y:0}};
+		tank = new tankobj(myCanvas.width/2+50,myCanvas.height-30,0,5,true);
+		tank.shellimg = document.getElementById("shell");
+		tank.setimg(document.getElementById("tank1"));
+		oth_tank =new Array();
+		int_game = setInterval(draw,100);
+		int_shell = setInterval(oth_tank_shell,level.oth_tank_shell);
+
+}
+//下一关
+function next_level(){
+	if(!is_game_init)
+	{
+		return ;
+	}
+	run_var = {is_end:false,diesum:0,tank_xy:{x:0,y:0}};
+	reward = {speed:new Array()}
+	level = {nowlevel:level.nowlevel+1,showsum_oth:level.showsum_oth*1.5,max_speed:level.max_speed*1.2,oth_tank_shell:level.oth_tank_shell*1.3,sum_die:level.showsum_oth*2}
+	tank = new tankobj(myCanvas.width/2+50,myCanvas.height-30,0,5,true);
+	tank.shellimg = document.getElementById("shell");
+	tank.setimg(document.getElementById("tank1"));
+	oth_tank =new Array();
+	bj_audio.load();bj_audio.play();
+	int_game = setInterval(draw,100);
+	int_shell = setInterval(oth_tank_shell,level.oth_tank_shell);
+}
+function end(){
+		int_game = window.clearInterval(int_game);
+		int_shell = window.clearInterval(int_shell);
+		if(level.sum_die<=run_var.diesum&&tank.die==0)
+		{
+			alert('第'+level.nowlevel+'关，你赢了！'+' 你杀死了'+run_var.diesum+'坦克');
+			if(confirm('是否进入下一关？'))
+				next_level();
+			else
+			{
+				game_init();draw();
+			}
+		}
+		else
+		{
+			bj_audio.load();bj_audio.pause();
+			alert('game over 你玩到了第'+level.nowlevel+'关， 这关你杀死了'+run_var.diesum+'坦克');
+			if(confirm('是否重新开始这关？'))
+				restart();
+			else
+			{
+				game_init();draw();
+			}
+		}
+		
+}
+function draw(){
+	cxt.clearRect(0,0,myCanvas.width,myCanvas.height);
+	//cxt.fillStyle="#DDDDDD";
+	//cxt.fillRect(0,0,myCanvas.width,myCanvas.height);
+	var bj = document.getElementById('bjimg'+level.nowlevel);
+	if(bj==null)
+	{
+		bj = document.getElementById('bjimg1');
+	}
+	cxt.save();
+	cxt.scale(myCanvas.width/bj.width,myCanvas.height/bj.height);
+	cxt.drawImage(bj,0,0);
+	cxt.restore();
+	cxt.save();
+	if(oth_tank.length<level.showsum_oth&&level.sum_die>(run_var.diesum+oth_tank.length))
+	{	
+		var x,y,speed=0;
+		var i,gap;
+		var new_tankvar ;
+		while(speed<1)
+			{
+				speed = level.max_speed*Math.random();
+			}
+		do{
+			x=myCanvas.width*Math.random();
+			y=myCanvas.height*Math.random();
+			new_tank = new tankobj(x,y,0,speed);
+			gap = new_tank.ret_gap(tank);
+		}
+		while(gap.x<0&&gap.y<0)
+		new_tank.setimg(document.getElementById("tank2"));
+		new_tank.auto_rotate();
+		oth_tank.push(new_tank);
+	}
+	for(i=0;i<oth_tank.length;i++)
+	{
+		while(oth_tank[i].gospeed()===false)
+		{
+			oth_tank[i].auto_rotate();
+		}
+		if(Math.random()<0.1)
+		{
+			oth_tank[i].auto_rotate();
+		}
+		//oth_tank[i].goshell();
+		if(oth_tank[i].show()===false)
+		{
+			oth_tank.splice(i,1);
+		}
+	}
+	//cxt.translate(run_var.tank_xy.x,run_var.tank_xy.y);
+	/* cxt.rotate(Math.PI/2);
+	cxt.drawImage(document.getElementById('tank'),-20,-20); */
+	cxt.restore();
+	tank.gospeed();
+	tank.show();
+	if((run_var.is_end&&tank.die>=tank.diesum)||level.sum_die<=run_var.diesum)
+	{
+		end();
+	}
+	//run_var.tank_xy.x+=2;run_var.tank_xy.y+=2;
+}
+function oth_tank_shell(){
+	for(i=0;i<oth_tank.length;i++)
+	{
+		oth_tank[i].goshell();
+	}
+}
+function keyeve(e){
+//alert(e.which);
+	switch (e.which){
+		case 65:;
+		case 37:tank.uprotate(3*Math.PI/2);break;
+		case 87:;
+		case 38:tank.uprotate(0);break;
+		case 68:;
+		case 39:tank.uprotate(Math.PI/2);break;
+		case 83:;
+		case 40:tank.uprotate(Math.PI);break;
+		case 74:;
+		case 32:tank.goshell();break;
+		case 27:;
+		case 80:Pause();break;
+		case 79:notPause();break;
+		default : break;
+	}
+	return;
+	//左  a = 65
+	e.which=37
+	//上 w = 87
+	e.which=38
+	//右 d = 68
+	e.which=39
+	//下 s = 83
+	e.which=40
+	//空格 j = 74
+	e.which=32
+	//p 80 esc = 27
+	
+	//o 79
+	
+}
+
+//img对象
+function imgstr(id,src){
+	this.id=id
+	this.src = src;
+	if(typeof imgstr._isfun == 'undefined')
+	{
+		imgstr.prototype.tostr=function (){
+			return '<img name="" onload="this.name=\'imgok\'" id="'+this.id+'" src="'+this.src+'"/>';
+		}
+		imgstr._isfun = true;
+	}
+}
+
+
+
+</script>
+</head>
+<body onkeydown="keyeve(event);">
+<button onclick="if(!is_game_init){alert('等待游戏初始化');return;}if(confirm('确定从第一关重新开始?')){Pause();entrance();}" >restart</button>
+<button onclick="Pause();">暂停</button>
+<button onclick="notPause();">继续</button>
+<div id="img_div" style="display:none;">
+<script type="text/javascript">
+var allimg = new Array();
+var img_bj,i;
+var tank_src = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACkAAAAsCAQAAABSpFnOAAAACXBIWXMAAAsTAAALEwEAmpwYAAADGGlDQ1BQaG90b3Nob3AgSUNDIHByb2ZpbGUAAHjaY2BgnuDo4uTKJMDAUFBUUuQe5BgZERmlwH6egY2BmYGBgYGBITG5uMAxIMCHgYGBIS8/L5UBFTAyMHy7xsDIwMDAcFnX0cXJlYE0wJpcUFTCwMBwgIGBwSgltTiZgYHhCwMDQ3p5SUEJAwNjDAMDg0hSdkEJAwNjAQMDg0h2SJAzAwNjCwMDE09JakUJAwMDg3N+QWVRZnpGiYKhpaWlgmNKflKqQnBlcUlqbrGCZ15yflFBflFiSWoKAwMD1A4GBgYGXpf8EgX3xMw8BSMDVQYqg4jIKAUICxE+CDEESC4tKoMHJQODAIMCgwGDA0MAQyJDPcMChqMMbxjFGV0YSxlXMN5jEmMKYprAdIFZmDmSeSHzGxZLlg6WW6x6rK2s99gs2aaxfWMPZ9/NocTRxfGFM5HzApcj1xZuTe4FPFI8U3mFeCfxCfNN45fhXyygI7BD0FXwilCq0A/hXhEVkb2i4aJfxCaJG4lfkaiQlJM8JpUvLS19QqZMVl32llyfvIv8H4WtioVKekpvldeqFKiaqP5UO6jepRGqqaT5QeuA9iSdVF0rPUG9V/pHDBYY1hrFGNuayJsym740u2C+02KJ5QSrOutcmzjbQDtXe2sHY0cdJzVnJRcFV3k3BXdlD3VPXS8Tbxsfd99gvwT//ID6wIlBS4N3hVwMfRnOFCEXaRUVEV0RMzN2T9yDBLZE3aSw5IaUNak30zkyLDIzs+ZmX8xlz7PPryjYVPiuWLskq3RV2ZsK/cqSql01jLVedVPrHzbqNdU0n22VaytsP9op3VXUfbpXta+x/+5Em0mzJ/+dGj/t8AyNmf2zvs9JmHt6vvmCpYtEFrcu+bYsc/m9lSGrTq9xWbtvveWGbZtMNm/ZarJt+w6rnft3u+45uy9s/4ODOYd+Hmk/Jn58xUnrU+fOJJ/9dX7SRe1LR68kXv13fc5Nm1t379TfU75/4mHeY7En+59lvhB5efB1/lv5dxc+NH0y/fzq64Lv4T8Ffp360/rP8f9/AA0ADzT6lvFdAAAAIGNIUk0AAHolAACAgwAA+f8AAIDpAAB1MAAA6mAAADqYAAAXb5JfxUYAAABdSURBVHjaYvzPQG3AgluKEb9tOKWZqO7IUSNHjRw1cpgYyYhLnOP/j9GwHDVy1MjhayTW1gYbw09G3MUCEvhPYgOGUGuJkfoeH20TjRo5auSokYPXSAAAAAD//wMAmwcJW8IAJxUAAAAASUVORK5CYII=";
+//var tank_src = "img/a1.png";
+var img_tank = new imgstr('tank',tank_src);
+document.write(img_tank.tostr());
+allimg.push(new imgstr('shell','img/shell.png'));
+allimg.push(new imgstr('flag','img/flag.gif'));
+//tankimg
+for (i=0;i<2;i++)
+{
+	img_bj = new imgstr('tank'+(i+1),'img/tank'+(i+1)+'.png');
+	document.write(img_bj.tostr());
+}
+//allimg
+for(i=0;i<allimg.length;i++)
+{
+	document.write(allimg[i].tostr());
+}
+//bjimg
+for (i=0;i<5;i++)
+{
+	img_bj = new imgstr('bjimg'+(i+1),'img/bj/bj'+(i+1)+'.jpg');
+	document.write(img_bj.tostr());
+}
+</script>
+</div>
+<div id="audio_div" style="display:none;">
+<audio id="bj_audio"  loop="loop">
+	<source src="audio/bj.mp3" type="audio/mpeg">
+	<source src="audio/bj.ogg" type="audio/ogg">
+	<source src="audio/bj.wav" type="audio/wave">
+</audio>
+</div>
+<div style="text-align: center;" align="center">
+<canvas id="myCanvas" width="800" height="600"></canvas>
+</div>
+<p>优化版坦克游戏(html5)<span style="color:red">键盘“上下左右(w,s,a,d)”移动，“空格(j)”放子弹&nbsp&nbsp&nbsp&nbsp“p”暂停&nbsp&nbsp&nbsp&nbsp“o”开始</span></p>
+<div id="text_div"></div>
+</body>
+</html>
+
+<?php
+exit;
+$a = file_get_contents('http://www.baidu.com');
+echo $a;

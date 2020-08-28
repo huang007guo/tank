@@ -1,0 +1,427 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<script src="http://ss1.yokacdn.com/www/public/j/jquery.1.4.2.js" charset="utf-8"></script>
+<script type="text/javascript">
+var run_var = {is_end:false,diesum:0,tank_xy:{x:0,y:0}};
+var reward = {speed:new Array()}
+var level = {sumoth_tank:8,max_speed:5}
+var int_game ;
+var int_shell;
+var cxt;
+var int_img;
+var tank = new tankobj(500,500,0,5,true);
+var oth_tank =new Array();
+$(function (){
+
+//setInterval(draw,100);
+
+
+	/*var img=new Image();
+	img.src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACkAAAAsCAQAAABSpFnOAAAACXBIWXMAAAsTAAALEwEAmpwYAAADGGlDQ1BQaG90b3Nob3AgSUNDIHByb2ZpbGUAAHjaY2BgnuDo4uTKJMDAUFBUUuQe5BgZERmlwH6egY2BmYGBgYGBITG5uMAxIMCHgYGBIS8/L5UBFTAyMHy7xsDIwMDAcFnX0cXJlYE0wJpcUFTCwMBwgIGBwSgltTiZgYHhCwMDQ3p5SUEJAwNjDAMDg0hSdkEJAwNjAQMDg0h2SJAzAwNjCwMDE09JakUJAwMDg3N+QWVRZnpGiYKhpaWlgmNKflKqQnBlcUlqbrGCZ15yflFBflFiSWoKAwMD1A4GBgYGXpf8EgX3xMw8BSMDVQYqg4jIKAUICxE+CDEESC4tKoMHJQODAIMCgwGDA0MAQyJDPcMChqMMbxjFGV0YSxlXMN5jEmMKYprAdIFZmDmSeSHzGxZLlg6WW6x6rK2s99gs2aaxfWMPZ9/NocTRxfGFM5HzApcj1xZuTe4FPFI8U3mFeCfxCfNN45fhXyygI7BD0FXwilCq0A/hXhEVkb2i4aJfxCaJG4lfkaiQlJM8JpUvLS19QqZMVl32llyfvIv8H4WtioVKekpvldeqFKiaqP5UO6jepRGqqaT5QeuA9iSdVF0rPUG9V/pHDBYY1hrFGNuayJsym740u2C+02KJ5QSrOutcmzjbQDtXe2sHY0cdJzVnJRcFV3k3BXdlD3VPXS8Tbxsfd99gvwT//ID6wIlBS4N3hVwMfRnOFCEXaRUVEV0RMzN2T9yDBLZE3aSw5IaUNak30zkyLDIzs+ZmX8xlz7PPryjYVPiuWLskq3RV2ZsK/cqSql01jLVedVPrHzbqNdU0n22VaytsP9op3VXUfbpXta+x/+5Em0mzJ/+dGj/t8AyNmf2zvs9JmHt6vvmCpYtEFrcu+bYsc/m9lSGrTq9xWbtvveWGbZtMNm/ZarJt+w6rnft3u+45uy9s/4ODOYd+Hmk/Jn58xUnrU+fOJJ/9dX7SRe1LR68kXv13fc5Nm1t379TfU75/4mHeY7En+59lvhB5efB1/lv5dxc+NH0y/fzq64Lv4T8Ffp360/rP8f9/AA0ADzT6lvFdAAAAIGNIUk0AAHolAACAgwAA+f8AAIDpAAB1MAAA6mAAADqYAAAXb5JfxUYAAABdSURBVHjaYvzPQG3AgluKEb9tOKWZqO7IUSNHjRw1cpgYyYhLnOP/j9GwHDVy1MjhayTW1gYbw09G3MUCEvhPYgOGUGuJkfoeH20TjRo5auSokYPXSAAAAAD//wMAmwcJW8IAJxUAAAAASUVORK5CYII=";
+	img.onload = function (){
+		cxt.drawImage(img,0,0);
+		
+	};*/
+	
+});
+function entrance(){
+	if(typeof int_game != 'undefined')return false;
+	var c=document.getElementById("myCanvas");
+	cxt=c.getContext("2d");
+	int_img=self.setInterval("is_loadimg()",50);
+}
+function is_loadimg(){
+	if($('#img_div img').size()==$('#img_div img[name=imgok]').size())
+	{
+		int_img=window.clearInterval(int_img);
+		start();
+		return true;
+	}
+}
+function game_init(){
+	run_var = {is_end:false,diesum:0,tank_xy:{x:0,y:0}};
+	reward = {speed:new Array()}
+	level = {sumoth_tank:8,max_speed:5}
+	int_game = '';
+	int_shell = '';
+	int_img = '';
+	tank = new tankobj(500,500,0,5,true);
+	oth_tank =new Array();
+}
+function start(){
+		game_init();
+		int_game = setInterval(draw,100);
+		int_shell = setInterval(oth_tank_shell,500);
+}
+function end(){
+		alert('game over'+' 你杀死了'+run_var.diesum+'坦克');
+		int_game = window.clearInterval(int_game);
+		int_shell = window.clearInterval(int_shell);
+		cxt.clearRect(0,0,800,600);
+		cxt.fillStyle="#DDDDDD";
+		cxt.fillRect(0,0,800,600);
+}
+function draw(){
+	cxt.clearRect(0,0,800,600);
+	cxt.fillStyle="#DDDDDD";
+	cxt.fillRect(0,0,800,600);
+	cxt.save();
+	if(oth_tank.length<=level.sumoth_tank)
+	{	
+		var x,y,speed=0;
+		var i;
+		do{
+			x=800*Math.random();
+			y=600*Math.random();
+		}
+		while(x>(tank.x-45)&&x<(tank.x+45)&&y<(tank.y+45)&&y>(tank.y-45))
+			while(speed<1)
+			{
+				speed = level.max_speed*Math.random();
+			}
+		
+		var new_tank = new tankobj(x,y,0,speed);
+		new_tank.auto_rotate();
+		oth_tank.push(new_tank);
+	}
+	for(i=0;i<oth_tank.length;i++)
+	{
+		while(oth_tank[i].gospeed()===false)
+		{
+			oth_tank[i].auto_rotate();
+		}
+		if(Math.random()<0.1)
+		{
+			oth_tank[i].auto_rotate();
+		}
+		//oth_tank[i].goshell();
+		if(oth_tank[i].show()===false)
+		{
+			oth_tank.splice(i,1);
+		}
+	}
+	//cxt.translate(run_var.tank_xy.x,run_var.tank_xy.y);
+	/* cxt.rotate(Math.PI/2);
+	cxt.drawImage(document.getElementById('tank'),-20,-20); */
+	cxt.restore();
+	tank.gospeed();
+	tank.show();
+	if(run_var.is_end&&tank.die>=tank.diesum)
+	{
+		end();
+	}
+	//run_var.tank_xy.x+=2;run_var.tank_xy.y+=2;
+}
+function oth_tank_shell(){
+	for(i=0;i<oth_tank.length;i++)
+	{
+		oth_tank[i].goshell();
+	}
+}
+function keyeve(e){
+	switch (e.which){
+		case 37:tank.uprotate(3*Math.PI/2);break;
+		case 38:tank.uprotate(0);break;
+		case 39:tank.uprotate(Math.PI/2);break;
+		case 40:tank.uprotate(Math.PI);break;
+		case 32:tank.goshell();break;
+		default : break;
+	}
+	return;
+	//左
+	e.which=37
+	//上
+	e.which=38
+	//右
+	e.which=39
+	//下
+	e.which=40
+	//空格
+	e.which=32
+}
+
+//tank对象
+function tankobj(x,y,rotate,speed,ismy){
+	if(typeof rotate=='undefined')
+	{
+		rotate = 0;
+	}
+	if(typeof speed=='undefined')
+	{
+		speed = 1;
+	}
+	if(typeof ismy=='undefined')
+	{
+		ismy = false;
+	}
+	tankobj.prototype.diesum = 30;
+	this.x = x;
+	this.y = y;
+	this.rotate = rotate;
+	this.speed = speed;
+	this.shell = new Array();
+	this.ismy = ismy;
+	this.die = 0;
+	if(typeof tankobj._isfun == 'undefined')
+	{
+		tankobj.prototype.uprotate = function (rotate){
+			if(rotate-this.rotate!=Math.PI/2&&rotate-this.rotate!=-Math.PI/2&&rotate-this.rotate!=(3*Math.PI/2)&&rotate-this.rotate!=-(3*Math.PI/2))
+			{
+				return false;
+			}
+			this.rotate = rotate;
+			
+		}
+		tankobj.prototype.auto_rotate = function (){
+			var ran = Math.random();
+			if(0<=ran&&ran<0.25)
+			{	
+				ran = 0;
+			}else if(0.25<=ran&&ran<0.5)
+			{
+				ran = Math.PI/2;
+			}else if(0.5<=ran&&ran<0.75)
+			{
+				ran = Math.PI;
+			}else if(0.75<=ran&&ran<=1)
+			{
+				ran = 3*Math.PI/2;
+			}
+			
+			this.rotate=ran;
+		}
+		tankobj.prototype.show = function (){
+			if(this.die>=this.diesum) return false;
+			var i;
+			cxt.save();
+			cxt.rotate(this.rotate);
+			switch (this.rotate){
+				case 0:cxt.translate(this.x,this.y);break;
+				case Math.PI/2:cxt.translate(this.y,-this.x);break;
+				case Math.PI:cxt.translate(-this.x,-this.y);break;
+				case (3*Math.PI)/2:cxt.translate(-this.y,this.x);break;
+				default : break;
+			}
+			cxt.drawImage(document.getElementById('tank'),-20,-20);
+			if(this.ismy)
+			{
+				cxt.fillStyle = "rgba(255,0,0,0.8)";
+				cxt.fillRect(-6,0,12,20);
+			}
+			else
+			{
+				if(this.die==0&&this.x>(tank.x-35)&&this.x<(tank.x+35)&&this.y<(tank.y+35)&&this.y>(tank.y-35))
+				{
+					tank.godie();run_var.is_end = true;
+				}
+					
+			}
+			cxt.restore();
+			if(this.die>=1)
+			{
+				this.godie();
+			}
+			for(i=0;i<this.shell.length;i++)
+			{
+				if(this.shell[i].run()===false)
+				{
+					this.shell.splice(i,1);
+				}
+				else
+				{
+					this.shell[i].show();
+				}
+			}
+		}
+		tankobj.prototype.gospeed = function (){
+			if(this.die>=1)
+			{
+				return ;
+			}
+			if(this.speed!=0)
+			{
+			switch (this.rotate){
+				case 0:
+					if(this.y-this.speed>=0)
+						this.y -= this.speed;
+					else
+						return false;
+					break;
+				case Math.PI/2:
+					if(this.x+this.speed<=800)
+						this.x += this.speed;
+					else
+						return false;
+					break;
+				case Math.PI:
+					if(this.y + this.speed<=600)
+						this.y += this.speed;
+					else
+						return false;
+					break;
+				case (3*Math.PI)/2:
+					if(this.x - this.speed>=0)
+						this.x -= this.speed;
+					else
+						return false;
+					break;
+				default : break;
+			}
+			}
+		}
+		tankobj.prototype.goshell = function (){
+			if(this.die>=1)return;
+			var x = this.x,y = this.y;
+			switch (this.rotate){
+				case 0:
+					y = this.y-20;
+					break;
+				case Math.PI/2:
+					x = this.x+20;
+					break;
+				case Math.PI:
+					y = this.y+20;
+					break;
+				case (3*Math.PI)/2:
+					x = this.x-20;
+					break;
+				default : break;
+			}
+			var myshell = new shellobj(x,y,this.rotate,this.speed+4,this.ismy);
+			this.shell.push(myshell);
+		}
+		tankobj.prototype.godie = function (){
+		$('#text').text(this.die);
+			if(this.die>=this.diesum)
+				return true;
+			cxt.save();
+			cxt.rotate(this.rotate);
+			switch (this.rotate){
+				case 0:cxt.translate(this.x,this.y);break;
+				case Math.PI/2:cxt.translate(this.y,-this.x);break;
+				case Math.PI:cxt.translate(-this.x,-this.y);break;
+				case (3*Math.PI)/2:cxt.translate(-this.y,this.x);break;
+				default : break;
+			}
+			cxt.fillStyle = "rgba(0,0,255,1)";
+			cxt.fillRect(-(12+(this.die*2))/2,-(20+(this.die*2))/2,12+(this.die*2),20+(this.die*2));
+			this.die +=1 ;
+			cxt.restore();
+			
+			
+		}
+		tankobj._isfun = true;
+	}
+}
+//shell炮弹
+function shellobj(x,y,rotate,speed,ismy){
+	if(typeof ismy=='undefined')
+	{
+		ismy = false;
+	}
+	this.x = x;
+	this.y = y;
+	this.rotate = rotate;
+	this.speed = speed;
+	this.ismy = ismy;
+	if(typeof shellobj._isfun == 'undefined'){
+		shellobj.prototype.show = function (){
+			cxt.save();
+			cxt.rotate(this.rotate);
+			switch (this.rotate){
+				case 0:cxt.translate(this.x,this.y);break;
+				case Math.PI/2:cxt.translate(this.y,-this.x);break;
+				case Math.PI:cxt.translate(-this.x,-this.y);break;
+				case (3*Math.PI)/2:cxt.translate(-this.y,this.x);break;
+				default : break;
+			}
+				cxt.fillStyle = "rgba(0,255,0,1)";
+				cxt.fillRect(-5,-5,10,10);
+		if(this.x>(tank.x-15)&&this.x<(tank.x+15)&&this.y<(tank.y+15)&&this.y>(tank.y-15))
+		{
+			tank.godie();run_var.is_end = true;
+		}
+		cxt.restore();
+		if(this.ismy)
+		{
+			for(i=0;i<oth_tank.length;i++)
+			{
+				if(this.x>(oth_tank[i].x-15)&&this.x<(oth_tank[i].x+15)&&this.y<(oth_tank[i].y+15)&&this.y>(oth_tank[i].y-15))
+				{
+					if(oth_tank[i].die==0)run_var.diesum+=1;
+					oth_tank[i].godie();
+				}
+			}
+		}
+		}
+		shellobj.prototype.run = function (){
+			switch (this.rotate){
+				case 0:
+					if(this.y-this.speed>=0)
+						this.y -= this.speed;
+					else
+						return false;
+					break;
+				case Math.PI/2:
+					if(this.x+this.speed<=800)
+						this.x += this.speed;
+					else
+						return false;
+					break;
+				case Math.PI:
+					if(this.y + this.speed<=600)
+						this.y += this.speed;
+					else
+						return false;
+					break;
+				case (3*Math.PI)/2:
+					if(this.x - this.speed>=0)
+						this.x -= this.speed;
+					else
+						return false;
+					break;
+				default : break;
+			}
+		}
+	
+		shellobj._isfun = true;
+	}
+}
+//img对象
+function imgstr(id,src){
+	this.id=id
+	this.src = src;
+	if(typeof imgstr._isfun == 'undefined')
+	{
+		imgstr.prototype.tostr=function (){
+			return '<img name="" onload="this.name=\'imgok\'" id="'+this.id+'" src="'+this.src+'"/>';
+		}
+		imgstr._isfun = true;
+	}
+}
+
+
+
+</script>
+</head>
+<body onkeydown="keyeve(event);">
+<button onclick="entrance();" >start</button>
+<div id="img_div" style="display:none;">
+<script type="text/javascript">
+var tank_src = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACkAAAAsCAQAAABSpFnOAAAACXBIWXMAAAsTAAALEwEAmpwYAAADGGlDQ1BQaG90b3Nob3AgSUNDIHByb2ZpbGUAAHjaY2BgnuDo4uTKJMDAUFBUUuQe5BgZERmlwH6egY2BmYGBgYGBITG5uMAxIMCHgYGBIS8/L5UBFTAyMHy7xsDIwMDAcFnX0cXJlYE0wJpcUFTCwMBwgIGBwSgltTiZgYHhCwMDQ3p5SUEJAwNjDAMDg0hSdkEJAwNjAQMDg0h2SJAzAwNjCwMDE09JakUJAwMDg3N+QWVRZnpGiYKhpaWlgmNKflKqQnBlcUlqbrGCZ15yflFBflFiSWoKAwMD1A4GBgYGXpf8EgX3xMw8BSMDVQYqg4jIKAUICxE+CDEESC4tKoMHJQODAIMCgwGDA0MAQyJDPcMChqMMbxjFGV0YSxlXMN5jEmMKYprAdIFZmDmSeSHzGxZLlg6WW6x6rK2s99gs2aaxfWMPZ9/NocTRxfGFM5HzApcj1xZuTe4FPFI8U3mFeCfxCfNN45fhXyygI7BD0FXwilCq0A/hXhEVkb2i4aJfxCaJG4lfkaiQlJM8JpUvLS19QqZMVl32llyfvIv8H4WtioVKekpvldeqFKiaqP5UO6jepRGqqaT5QeuA9iSdVF0rPUG9V/pHDBYY1hrFGNuayJsym740u2C+02KJ5QSrOutcmzjbQDtXe2sHY0cdJzVnJRcFV3k3BXdlD3VPXS8Tbxsfd99gvwT//ID6wIlBS4N3hVwMfRnOFCEXaRUVEV0RMzN2T9yDBLZE3aSw5IaUNak30zkyLDIzs+ZmX8xlz7PPryjYVPiuWLskq3RV2ZsK/cqSql01jLVedVPrHzbqNdU0n22VaytsP9op3VXUfbpXta+x/+5Em0mzJ/+dGj/t8AyNmf2zvs9JmHt6vvmCpYtEFrcu+bYsc/m9lSGrTq9xWbtvveWGbZtMNm/ZarJt+w6rnft3u+45uy9s/4ODOYd+Hmk/Jn58xUnrU+fOJJ/9dX7SRe1LR68kXv13fc5Nm1t379TfU75/4mHeY7En+59lvhB5efB1/lv5dxc+NH0y/fzq64Lv4T8Ffp360/rP8f9/AA0ADzT6lvFdAAAAIGNIUk0AAHolAACAgwAA+f8AAIDpAAB1MAAA6mAAADqYAAAXb5JfxUYAAABdSURBVHjaYvzPQG3AgluKEb9tOKWZqO7IUSNHjRw1cpgYyYhLnOP/j9GwHDVy1MjhayTW1gYbw09G3MUCEvhPYgOGUGuJkfoeH20TjRo5auSokYPXSAAAAAD//wMAmwcJW8IAJxUAAAAASUVORK5CYII=";
+var img_tank = new imgstr('tank',tank_src);
+document.write(img_tank.tostr());
+</script>
+</div>
+<div style="text-align: center;" align="center">
+<canvas id="myCanvas" width="800" height="600"></canvas>
+</div>
+<div id="text"></div>
+</body>
+</html>
+
+<?php
+exit;
+$a = file_get_contents('http://www.baidu.com');
+echo $a;
